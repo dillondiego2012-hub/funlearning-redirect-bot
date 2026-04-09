@@ -2,22 +2,20 @@ import fs from 'fs';
 import path from 'path';
 
 export default function handler(req, res) {
-  // Path to urls.json in the root of the repo
+  // Read urls.json from the root
   const urlsPath = path.resolve('./urls.json');
-
-  // Read and parse urls.json
   const urls = JSON.parse(fs.readFileSync(urlsPath));
 
-  // The path user visited, e.g., "/link1"
-  const oldUrl = req.url;
+  // Extract the path after /api
+  // req.url might be like "/link1" or "/link1?foo=bar"
+  const oldUrl = req.url.split('?')[0]; // remove query string
 
+  // Check if the path exists in urls.json
   if (urls[oldUrl]) {
-    // Redirect to the target URL
     res.writeHead(302, { Location: urls[oldUrl] });
     res.end();
   } else {
-    // If path not found, show 404
     res.writeHead(404);
-    res.end('Page not found');
+    res.end(`Page not found: ${oldUrl}`);
   }
 }
